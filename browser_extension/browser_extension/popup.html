@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      width: 320px;
+      padding: 8px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      font-size: 12px;
+      margin: 0;
+    }
+    .status {
+      padding: 6px 8px;
+      border-radius: 4px;
+      margin: 4px 0;
+      font-size: 11px;
+    }
+    .active {
+      background-color: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+    }
+    .inactive {
+      background-color: #f8d7da;
+      border: 1px solid #f5c6cb;
+      color: #721c24;
+    }
+    .config-section {
+      background-color: #f8f9fa;
+      padding: 6px 8px;
+      border-radius: 4px;
+      margin: 4px 0;
+    }
+    .collapsible {
+      cursor: pointer;
+      padding: 6px 8px;
+      background-color: #e9ecef;
+      border: none;
+      text-align: left;
+      outline: none;
+      font-size: 11px;
+      font-weight: bold;
+      border-radius: 4px;
+      margin: 2px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .collapsible:hover {
+      background-color: #dee2e6;
+    }
+    .collapsible-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.2s ease-out;
+      background-color: #f8f9fa;
+      border-radius: 4px;
+      margin: 0 0 4px 0;
+    }
+    .collapsible-content.active {
+      max-height: 500px;
+      padding: 6px 8px;
+    }
+    input[type="text"], select {
+      width: 100%;
+      padding: 4px 6px;
+      margin: 2px 0;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      box-sizing: border-box;
+      font-size: 11px;
+    }
+    button {
+      width: 100%;
+      padding: 5px 8px;
+      margin: 2px 0;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 500;
+    }
+    button.inline {
+      width: auto;
+      display: inline-block;
+      padding: 3px 8px;
+      margin-left: 4px;
+    }
+    .enable {
+      background-color: #28a745;
+      color: white;
+    }
+    .disable {
+      background-color: #dc3545;
+      color: white;
+    }
+    .save {
+      background-color: #007bff;
+      color: white;
+    }
+    .small-text {
+      font-size: 10px;
+      color: #666;
+      line-height: 1.3;
+      margin: 2px 0;
+    }
+    label {
+      font-weight: 600;
+      font-size: 11px;
+      display: block;
+      margin: 4px 0 2px 0;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+      padding: 6px 8px;
+      border-radius: 4px;
+      margin-bottom: 6px;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .logo {
+      width: 80px;
+      height: auto;
+    }
+    .header h3 {
+      margin: 0;
+      font-size: 13px;
+      color: #ffffff;
+      font-weight: 600;
+    }
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 4px;
+    }
+    .status-indicator.active {
+      background-color: #28a745;
+      box-shadow: 0 0 4px #28a745;
+    }
+    .status-indicator.inactive {
+      background-color: #dc3545;
+      box-shadow: 0 0 4px #dc3545;
+    }
+    .btn-group {
+      display: flex;
+      gap: 4px;
+    }
+    .btn-group button {
+      flex: 1;
+    }
+    .chevron {
+      transition: transform 0.2s;
+    }
+    .chevron.open {
+      transform: rotate(180deg);
+    }
+    .loader {
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #007bff;
+      border-radius: 50%;
+      width: 12px;
+      height: 12px;
+      animation: spin 0.8s linear infinite;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 4px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-left">
+      <img src="https://dev-identity.zerotrusted.ai/img/logo-with-tagline-white.png" alt="ZT" class="logo">
+      <h3>ZTProxy</h3>
+    </div>
+    <span id="statusIndicator" class="status-indicator inactive"></span>
+  </div>
+  
+  <div id="proxyStatus" class="status inactive">
+    <span id="statusText">Checking...</span>
+  </div>
+  
+  <div id="failsafeWarning" class="status inactive" style="display:none;">
+    WARNING: Fail-safe DIRECT mode
+    <button id="retryProxy" class="save inline">Retry</button>
+  </div>
+  
+  <!-- Auth Section -->
+  <div id="authSection" class="config-section">
+    <div style="margin-bottom: 8px; font-weight: 500;">Authentication</div>
+    <div style="display:flex; gap:8px; margin-bottom:8px;">
+      <button id="connectSso" class="save" style="flex:1;">Login via SSO</button>
+      <button id="emailLoginToggle" class="save" style="flex:1;">Login via Email</button>
+    </div>
+    <div style="font-size:11px; color:#666; margin-bottom:8px;">
+      Status: <span id="authStatus"><span class="loader"></span>Checking session...</span>
+    </div>
+    <button id="disconnectSso" class="disable" style="display:none; width:100%;">Disconnect</button>
+    
+    <!-- Email/Password Login Form (Collapsible) -->
+    <div class="collapsible-content" id="emailLoginContent" style="padding: 8px 0;">
+      <label style="margin-bottom: 4px; display: block; font-weight: 500;">Email</label>
+      <input type="email" id="loginEmail" placeholder="Enter your email" style="width: 100%; margin-bottom: 8px; box-sizing: border-box;">
+      <label style="margin-bottom: 4px; display: block; font-weight: 500;">Password</label>
+      <input type="password" id="loginPassword" placeholder="Enter your password" style="width: 100%; margin-bottom: 8px; box-sizing: border-box;">
+      <button id="loginWithEmail" class="save" style="width: 100%;">Login</button>
+      <div id="emailLoginStatus" class="small-text" style="margin-top: 8px; color: #666;"></div>
+    </div>
+  </div>
+  
+  <!-- Quick Actions -->
+  <div class="btn-group">
+    <button id="enableProxy" class="enable">Enable</button>
+    <button id="disableProxy" class="disable">Disable</button>
+  </div>
+
+  <!-- Config Section (Collapsible) -->
+  <button class="collapsible" id="configToggle">
+    <span>Configuration</span>
+    <span class="chevron"></span>
+  </button>
+  <div class="collapsible-content" id="configContent">
+    <label for="proxyHost">Host</label>
+    <select id="proxyHost" style="width:100%;padding:5px;margin:5px 0;border:1px solid #ccc;border-radius:3px;">
+      <option value="ai-proxy.zerotrusted.ai" selected>ai-proxy.zerotrusted.ai (Production)</option>
+      <option value="localhost">localhost (Local)</option>
+    </select>
+    
+    <label for="proxyPort">Port</label>
+    <input type="text" id="proxyPort" placeholder="Auto-set based on host" value="443" style="width:100%;padding:5px;margin:5px 0;border:1px solid #ccc;border-radius:3px;box-sizing:border-box;">
+    <small style="color:#666;font-size:11px;margin-top:2px;display:block;">Port auto-updates: ai-proxy → 443, localhost → 8080</small>
+
+    <label for="enforcementMode">Enforcement</label>
+    <select id="enforcementMode">
+      <option value="block" selected>Block</option>
+    </select>
+
+    <div class="small-text" id="blocklistStatus" style="margin-top:4px;">
+      Blocklist: <em>loading...</em>
+    </div>
+    
+    <button id="saveConfig" class="save">Save Config</button>
+    <div class="small-text">Current: <span id="currentConfig">localhost:8081</span></div>
+  </div>
+
+  <!-- Tools Section (Collapsible) -->
+  <button class="collapsible" id="toolsToggle">
+    <span>Tools</span>
+    <span class="chevron"></span>
+  </button>
+  <div class="collapsible-content" id="toolsContent">
+    <button id="refreshRouting" class="save">Refresh Domains</button>
+    <button id="testConnection" class="save">Test Connection</button>
+  </div>
+
+  <p class="small-text" style="text-align:center;margin-top:6px;color:#999;">
+    v1.0
+  </p>
+
+  <script src="popup.js"></script>
+</body>
+</html>
