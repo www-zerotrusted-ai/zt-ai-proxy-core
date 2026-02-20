@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:           #f4f6fb;
+      --surface:      #ffffff;
+      --surface2:     #f0f3fa;
+      --surface3:     #e8ecf5;
+      --border:       #dde2ee;
+      --border2:      #c8cfdf;
+      --accent:       #2563eb;
+      --accent-light: #eff4ff;
+      --accent-hover: #1d4ed8;
+      --accent-glow:  rgba(37,99,235,0.12);
+      --green:        #16a34a;
+      --green-bg:     #f0fdf4;
+      --green-border: #bbf7d0;
+      --red:          #dc2626;
+      --red-bg:       #fef2f2;
+      --red-border:   #fecaca;
+      --amber:        #d97706;
+      --amber-bg:     #fffbeb;
+      --amber-border: #fde68a;
+      --text:         #0f172a;
+      --text2:        #475569;
+      --text3:        #94a3b8;
+      --text4:        #cbd5e1;
+      --radius:       10px;
+      --radius-sm:    7px;
+      --shadow:       0 1px 3px rgba(15,23,42,0.08), 0 1px 2px rgba(15,23,42,0.05);
+      --shadow-md:    0 4px 12px rgba(15,23,42,0.1), 0 2px 4px rgba(15,23,42,0.06);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 360px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-size: 13px;
+      line-height: 1.5;
+          -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+
+    /* ── SLIM SCROLLBAR ── */
+    /* Firefox */
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(0,0,0,0.35) transparent;
+    }
+    /* Chromium / WebKit */
+    *::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    *::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    *::-webkit-scrollbar-thumb {
+      background-color: rgba(0,0,0,0.30);
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.35);
+    }
+    *::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(0,0,0,0.45);
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+      padding: 11px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header-left  { display: flex; align-items: center; gap: 9px; }
+    .logo         { height: 35px; width: auto; }
+    .header-title { font-size: 14px; font-weight: 700; color: #fff; letter-spacing: -0.2px; }
+    .header-right { display: flex; align-items: center; gap: 7px; }
+
+    .status-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #fca5a5;
+      box-shadow: 0 0 0 2px rgba(255,255,255,0.25);
+      transition: all 0.3s;
+    }
+    .status-dot.active { background: #86efac; box-shadow: 0 0 0 2px rgba(255,255,255,0.3); }
+
+    .help-btn {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #fff;
+      font-size: 11px; font-weight: 700;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .help-btn:hover { background: rgba(255,255,255,0.32); }
+
+    /* ── BODY ── */
+    .popup-body { padding: 10px 12px; display: flex; flex-direction: column; gap: 9px; }
+
+    /* ── STATUS BAR ── */
+    .status-bar {
+      padding: 8px 11px;
+      border-radius: var(--radius-sm);
+      font-size: 12px; font-weight: 500;
+      border: 1px solid transparent;
+      display: flex; align-items: center; gap: 7px;
+      transition: all 0.3s;
+    }
+    .status-bar.active  { background: var(--green-bg);  border-color: var(--green-border); color: var(--green); }
+    .status-bar.inactive{ background: var(--red-bg);    border-color: var(--red-border);   color: var(--red); }
+    .status-bar.warning { background: var(--amber-bg);  border-color: var(--amber-border); color: var(--amber); }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    /* left accent bar on card */
+    .card { position: relative; }
+    .card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: linear-gradient(to bottom, #14b8a6, #2563eb);
+      border-radius: 10px 0 0 10px;
+    }
+
+    /* ── SECTION TOGGLE ── */
+    .section-toggle {
+      width: 100%; background: linear-gradient(to right, #f0f3fa, #ffffff); border: none; cursor: pointer;
+      padding: 10px 12px 10px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      color: var(--accent);
+      font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-size: 12px; font-weight: 700;
+      letter-spacing: -0.1px;
+      transition: all 0.15s;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-toggle:hover { background: linear-gradient(to right, #e8ecf5, #f0f3fa); color: var(--accent-hover); }
+    .s-left { display: flex; align-items: center; gap: 8px; }
+    .s-icon { font-size: 14px; }
+
+    .chevron { color: var(--text3); font-size: 12px; transition: transform 0.22s; display: inline-block; }
+    .chevron.open { transform: rotate(180deg); }
+
+    .section-body { max-height: 0; overflow: hidden; transition: max-height 0.28s ease; }
+    .section-body.open { max-height: 700px; }
+    .section-body-inner { padding: 4px 13px 13px 16px; border-top: 1px solid var(--border); }
+
+    /* ── FORM ── */
+    label {
+      display: block;
+      font-size: 10px; font-weight: 700; color: var(--accent);
+      text-transform: uppercase; letter-spacing: 0.7px;
+      margin-bottom: 5px; margin-top: 11px;
+    }
+    label:first-child { margin-top: 0; }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    select {
+      width: 100%;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      color: var(--text);
+      padding: 7px 32px 7px 10px;
+      border-radius: var(--radius-sm);
+      font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-size: 12px;
+      outline: none;
+      transition: border-color 0.18s, box-shadow 0.18s;
+      appearance: none;
+      -webkit-line-height: 1.25;
+      appearance: none;
+    }
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    input:disabled, select:disabled { opacity: 0.45; cursor: not-allowed; background: var(--surface2); }
+    input::placeholder { color: var(--text3); font-size: 11px; }
+
+    /* custom select arrow */
+    .select-wrap { position: relative; }
+    .select-wrap::after {
+      content: '▾';
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text3);
+      font-size: 12px;
+      pointer-events: none;
+    }
+    .select-wrap select { padding-right: 26px; }
+
+    /* Ensure consistent control typography in Configuration section */
+    #proxyHostSelect,
+    #proxyHostText,
+    #proxyPort,
+    #enforcementMode {
+      font-size: 12px !important;
+      font-weight: 500;
+    }
+
+    /* ── HOST MODE TOGGLE ── */
+    .host-mode-toggle {
+      display: flex;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 2px;
+      gap: 2px;
+      margin-bottom: 8px;
+    }
+    .host-mode-btn {
+      flex: 1;
+      padding: 7px 0;
+      border: none;
+      background: transparent;
+      color: var(--text2);
+      font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s;
+      border-radius: calc(var(--radius-sm) - 2px);
+    }
+    .host-mode-btn.active { background: linear-gradient(to right, #2563eb, #1d4ed8); color: #fff; box-shadow: 0 1px 6px var(--accent-glow); }
+    .host-mode-btn:not(.active):hover { background: var(--surface3); color: var(--text); }
+
+    /* ── 50/50 ROW ── */
+    .row-half { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .row-half label { margin-top: 10px; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+      padding: 8px 12px;
+      border: none; border-radius: var(--radius-sm);
+      font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: all 0.18s; width: 100%;
+    }
+    .btn-primary { background: var(--accent); color: #fff; border: none; }
+    .btn-primary:hover { background: var(--accent-hover); box-shadow: var(--shadow-md); }
+
+    /* Enable / Disable proxy — dark teal-emerald gradient */
+    .btn-green {
+      background: linear-gradient(to right, #14b8a6, #10b981);
+      color: #fff;
+      border: none;
+      box-shadow: 0 1px 4px rgba(16,185,129,0.3);
+    }
+    .btn-green:hover {
+      background: linear-gradient(to right, #0d9488, #059669);
+      box-shadow: 0 3px 10px rgba(16,185,129,0.35);
+    }
+    .btn-green:disabled { background: #d1d5db; box-shadow: none; cursor: not-allowed; }
+
+    .btn-red {
+      background: linear-gradient(to right, #ef4444, #dc2626);
+      color: #fff;
+      border: none;
+      box-shadow: 0 1px 6px rgba(220,38,38,0.35);
+    }
+    .btn-red:hover {
+      background: linear-gradient(to right, #0f172a, #1e293b);
+      box-shadow: 0 3px 10px rgba(15,23,42,0.3);
+    }
+    .btn-red:disabled { background: #d1d5db; box-shadow: none; cursor: not-allowed; }
+
+    /* Tool section buttons — dark slate */
+    .btn-tool {
+      background: linear-gradient(to right, #1e293b, #334155);
+      color: #e2e8f0;
+      border: none;
+      box-shadow: 0 1px 4px rgba(30,41,59,0.2);
+    }
+    .btn-tool:hover {
+      background: linear-gradient(to right, #0f172a, #1e293b);
+      color: #fff;
+      box-shadow: 0 3px 10px rgba(15,23,42,0.3);
+    }
+    .btn-tool:disabled { background: #d1d5db; color: #9ca3af; box-shadow: none; cursor: not-allowed; }
+
+    .btn-ghost {
+      background: var(--surface); color: var(--text2);
+      border: 1.5px solid var(--border);
+    }
+    .btn-ghost:hover { border-color: var(--border2); color: var(--text); background: var(--surface2); }
+
+    /* Email sign-in close button — darker than default ghost */
+    #closeEmailForm {
+      background: linear-gradient(to right, #334155, #1e293b);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    #closeEmailForm:hover {
+      background: linear-gradient(to right, #1e293b, #0f172a);
+      border-color: rgba(255,255,255,0.18);
+    }
+
+    .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+
+    /* ── MICROSOFT BUTTON ── */
+    .btn-ms {
+      background: #fff; color: #1f2937;
+      border: 1.5px solid #d1d5db;
+      display: flex; align-items: center; justify-content: center; gap: 9px;
+      font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; font-size: 12px; font-weight: 600;
+      padding: 8px 12px; border-radius: var(--radius-sm);
+      cursor: pointer; width: 100%;
+      transition: box-shadow 0.18s, border-color 0.18s;
+      box-shadow: var(--shadow);
+    }
+    .btn-ms:hover { box-shadow: var(--shadow-md); border-color: #9ca3af; }
+    .ms-icon { width: 17px; height: 17px; flex-shrink: 0; }
+
+    /* ── DIVIDER ── */
+    .divider {
+      display: flex; align-items: center; gap: 8px;
+      margin: 10px 0 8px;
+      color: var(--text3); font-size: 10px; font-weight: 500;
+    }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* ── EMAIL FORM ── */
+    .email-form { max-height: 0; overflow: hidden; transition: max-height 0.25s ease; }
+    .email-form.open { max-height: 320px; }
+
+    /* ── AUTH STATUS ── */
+    .auth-status-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 0 9px; gap: 8px;
+    }
+    #authStatus { font-size: 12px; color: var(--text2); display: flex; align-items: center; gap: 6px; font-weight: 500; }
+
+    /* ── HINT ── */
+    .hint {
+      font-size: 10px;
+      color: var(--text3);
+      margin-top: 4px;
+      font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      line-height: 1.45;
+      letter-spacing: 0.2px;
+    }
+
+    /* ── BADGE ── */
+    .badge {
+      display: inline-block;
+      padding: 2px 7px; border-radius: 20px;
+      font-size: 10px; font-weight: 700;
+      background: var(--accent-light); color: var(--accent);
+      letter-spacing: 0.2px;
+    }
+
+    /* ── LOADER ── */
+    .loader {
+      display: inline-block; width: 12px; height: 12px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite; flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── SECTION DIVIDER ── */
+    .separator {
+      height: 1px; background: var(--border);
+      margin: 10px 0;
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      text-align: center; padding: 9px 14px;
+      font-size: 10px; color: var(--text3);
+      border-top: 1px solid var(--border);
+      font-family: 'JetBrains Mono', monospace;
+      background: var(--surface);
+      letter-spacing: 0.2px;
+    }
+
+    /* FAILSAFE */
+    #failsafeWarning { display: none; }
+    #failsafeWarning.visible { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  </style>
+</head>
+<body>
+
+  <!-- ── HEADER ── -->
+  <div class="header">
+    <div class="header-left">
+      <img src="https://dev-identity.zerotrusted.ai/img/logo-with-tagline-white.png" alt="ZTProxy" class="logo">
+      <span class="header-title">ZTProxy</span>
+    </div>
+    <div class="header-right">
+      <span id="statusIndicator" class="status-dot"></span>
+      <a href="https://github.com/zerotrusted-ai" target="_blank" class="help-btn" title="Help &amp; Documentation on GitHub">?</a>
+    </div>
+  </div>
+
+  <div class="popup-body">
+
+    <!-- STATUS BAR -->
+    <div id="proxyStatus" class="status-bar inactive">
+      <span class="loader" id="statusLoader" style="display:none;"></span>
+      <span id="statusText">Checking…</span>
+    </div>
+
+    <!-- FAILSAFE WARNING -->
+    <div id="failsafeWarning" class="status-bar warning">
+      ⚠ Fail-safe DIRECT mode active
+      <button id="retryProxy" class="btn btn-ghost" style="width:auto;padding:3px 10px;font-size:11px;">Retry</button>
+    </div>
+
+    <!-- ── AUTH CARD ── -->
+    <div class="card" id="authSection">
+      <button class="section-toggle" id="authToggle">
+        <span class="s-left">
+          <span class="s-icon">🔐</span>
+          Authentication
+        </span>
+        <span class="chevron open" id="authChevron">▾</span>
+      </button>
+      <div class="section-body open" id="authBody">
+        <div class="section-body-inner">
+
+          <!-- Auth status row -->
+          <div class="auth-status-row">
+            <span id="authStatus"><span class="loader"></span>&nbsp;Checking session…</span>
+            <button id="disconnectSso" class="btn btn-red" style="width:auto;padding:5px 11px;font-size:12px;display:none;">Sign Out</button>
+          </div>
+
+          <!-- Microsoft SSO -->
+          <button id="connectSso" class="btn-ms" style="display:none;">
+            <svg class="ms-icon" viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg">
+              <rect x="1"  y="1"  width="9" height="9" fill="#f25022"/>
+              <rect x="11" y="1"  width="9" height="9" fill="#7fba00"/>
+              <rect x="1"  y="11" width="9" height="9" fill="#00a4ef"/>
+              <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
+            </svg>
+            Sign in with Microsoft
+          </button>
+
+          <div class="divider" id="authDivider" style="display:none;">or</div>
+
+          <!-- Email toggle button -->
+          <button id="emailLoginToggle" class="btn btn-ghost" style="display:none;">✉&nbsp; Sign in with Email &amp; Password</button>
+
+          <!-- Email / Password form -->
+          <div class="email-form" id="emailLoginContent">
+            <label style="margin-top:10px;">Email Address</label>
+            <input type="email" id="loginEmail" placeholder="you@company.com">
+
+            <label>Password</label>
+            <input type="password" id="loginPassword" placeholder="Enter your password">
+
+            <div style="margin-top:10px; display:flex; gap:7px;">
+              <button id="loginWithEmail" class="btn btn-primary" style="flex:1;">Sign In</button>
+              <button id="closeEmailForm" class="btn btn-ghost" style="width:auto; padding:7px 12px; flex-shrink:0;">✕ Close</button>
+            </div>
+            <div id="emailLoginStatus" class="hint" style="margin-top:6px;"></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ── QUICK ACTIONS ── -->
+    <div class="btn-group">
+      <button id="enableProxy"  class="btn btn-green">▶&nbsp; Enable Proxy</button>
+      <button id="disableProxy" class="btn btn-red">■&nbsp; Disable Proxy</button>
+    </div>
+
+    <!-- ── CONFIG CARD ── -->
+    <div class="card">
+      <button class="section-toggle" id="configToggle">
+        <span class="s-left">
+          <span class="s-icon">⚙️</span>
+          Configuration
+        </span>
+        <span class="chevron" id="configChevron">▾</span>
+      </button>
+      <div class="section-body" id="configBody">
+        <div class="section-body-inner">
+
+          <!-- Host -->
+          <label>Proxy Host</label>
+
+          <!-- Mode toggle: Select from list OR enter custom URL -->
+          <div class="host-mode-toggle">
+            <button class="host-mode-btn active" id="hostModeDropdown" type="button">Select from List</button>
+            <button class="host-mode-btn" id="hostModeText" type="button">Enter Custom URL</button>
+          </div>
+
+          <!-- Dropdown mode -->
+          <div class="select-wrap" id="hostSelectWrap">
+            <select id="proxyHostSelect">
+              <option value="ai-proxy.zerotrusted.ai">ai-proxy.zerotrusted.ai — Production</option>
+              <option value="localhost">localhost — Local Development</option>
+            </select>
+          </div>
+
+          <!-- Text mode (hidden by default) -->
+          <input type="text" id="proxyHostText" placeholder="e.g. proxy.mycompany.com" style="display:none;">
+
+          <!-- Port & Enforcement — 50% / 50% -->
+          <div class="row-half">
+            <div>
+              <label>Port</label>
+              <input type="text" id="proxyPort" value="443" placeholder="443">
+            </div>
+            <div>
+              <label>Enforcement Mode</label>
+              <div class="select-wrap">
+                <select id="enforcementMode">
+                  <option value="block">Block</option>
+                  <option value="monitor">Monitor Only</option>
+                  <option value="allow">Allow All</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="hint" id="portHint">Auto-set: ai-proxy → 443 &nbsp;·&nbsp; localhost → 8080</div>
+
+          <div class="separator"></div>
+
+          <div class="hint" id="blocklistStatus">Blocklist: <em>loading…</em></div>
+
+          <div style="margin-top:10px;">
+            <button id="saveConfig" class="btn btn-primary">Save Configuration</button>
+          </div>
+          <div class="hint" style="margin-top:6px;">
+            Active config: <span id="currentConfig" style="color:var(--accent); font-weight:600;">—</span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TOOLS CARD ── -->
+    <div class="card">
+      <button class="section-toggle" id="toolsToggle">
+        <span class="s-left">
+          <span class="s-icon">🛠️</span>
+          Tools
+        </span>
+        <span class="chevron" id="toolsChevron">▾</span>
+      </button>
+      <div class="section-body" id="toolsBody">
+        <div class="section-body-inner">
+          <div class="btn-group">
+            <button id="refreshRouting" class="btn btn-tool">↺&nbsp; Refresh Domains</button>
+            <button id="testConnection" class="btn btn-tool">⚡&nbsp; Test Connection</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /popup-body -->
+
+  <div class="footer">v1.0 &nbsp;·&nbsp; ZTProxy &nbsp;·&nbsp; Zero Trusted AI</div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

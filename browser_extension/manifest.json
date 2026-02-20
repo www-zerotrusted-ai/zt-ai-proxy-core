@@ -1,0 +1,43 @@
+{
+  "manifest_version": 3,
+  "name": "ZTProxy AI Domain Router",
+  "version": "1.0",
+  "description": "Automatically routes AI domains through ZTProxy for monitoring",
+  "permissions": [
+  "proxy",
+  "storage",
+  "downloads",
+  "tabs",
+  "scripting",
+  "webRequest",
+  "declarativeNetRequest",
+  "declarativeNetRequestWithHostAccess",
+  "declarativeNetRequestFeedback",
+  "notifications",
+  "alarms",
+  "identity",
+  "nativeMessaging"
+  ],
+  "host_permissions": [
+    "<all_urls>",
+    "https://dev-settings.zerotrusted.ai/*",
+    "https://dev-history.zerotrusted.ai/*",
+    "https://dev-identity.zerotrusted.ai/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+  "js": ["main_world_patch.js", "toast_inject.js"],
+  "run_at": "document_start",
+  "all_frames": true,
+  "match_about_blank": true
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "ZTProxy Status"
+  }
+}
