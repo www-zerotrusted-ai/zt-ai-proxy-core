@@ -1,0 +1,65 @@
+# ============================================================================
+# ENTERPRISE CODE (Closed Source)
+# ============================================================================
+# Do not commit enterprise-specific code to open-source repo
+enterprise/
+!enterprise/README.md
+
+# Enterprise-specific config
+*_enterprise.json
+enterprise_*.py
+
+# ============================================================================
+# Python
+# ============================================================================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+*.egg
+
+# Virtual environments
+venv/
+venv3*/
+venv312/
+.env
+.env.*
+
+# Build / dist
+build/
+dist/
+*.spec
+!ZTProxy.spec
+
+# Logs
+*.log
+interceptor/intercepted_requests.log
+
+# Session storage (shared between proxy instances)
+# interceptor/auth/data/
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# PyInstaller artifacts
+*.manifest
+*.dll
+*.exe
+*.pkg
+
+# Cache
+.mypy_cache/
+.pytest_cache/
+.cache/
+
+# PAC / temp test files
+simple-test.pac
+simple_proxy_test.py
+
+# Local config
+ztproxy_config.json

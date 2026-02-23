@@ -1,5 +1,20 @@
 // Popup script for ZTProxy extension
+// (Restored from browser_extension_previous)
 document.addEventListener('DOMContentLoaded', function () {
+  // Show install warning if just installed (simple heuristic: first popup open)
+  const installWarning = document.getElementById('installWarning');
+  const restartBrowserBtn = document.getElementById('restartBrowserBtn');
+  if (installWarning && restartBrowserBtn) {
+    chrome.storage.local.get(['ztInstallWarned'], (result) => {
+      if (!result.ztInstallWarned) {
+        installWarning.style.display = 'flex';
+        chrome.storage.local.set({ ztInstallWarned: true });
+      }
+    });
+    restartBrowserBtn.addEventListener('click', () => {
+      alert('Please close and reopen your browser to complete the extension installation.\n\nAutomatic restart is not supported by Chrome.');
+    });
+  }
 
   // ── DOM refs ──────────────────────────────────────────────────
   const statusElement      = document.getElementById('statusText');
@@ -36,14 +51,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // ── Helper: get active host value ────────────────────────────
   function getHostValue() {
-    // If custom URL input is visible, use that; otherwise use dropdown
     if (hostText.style.display !== 'none') {
       return hostText.value.trim();
     }
     return hostSelect.value;
   }
 
-  // ── Auto-set port based on host ──────────────────────────────
   function autoSetPort(host) {
     if (host === 'ai-proxy.zerotrusted.ai') {
       portInput.value = '443';
@@ -52,11 +65,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  // ── Host mode toggle: "Select from List" vs "Enter Custom URL"
   hostModeDropdown.addEventListener('click', function () {
     hostModeDropdown.classList.add('active');
     hostModeText.classList.remove('active');
-    // Show dropdown, hide text input
     hostSelectWrap.style.display = '';
     hostText.style.display = 'none';
     autoSetPort(hostSelect.value);
@@ -66,25 +77,21 @@ document.addEventListener('DOMContentLoaded', function () {
   hostModeText.addEventListener('click', function () {
     hostModeText.classList.add('active');
     hostModeDropdown.classList.remove('active');
-    // Hide dropdown, show text input
     hostSelectWrap.style.display = 'none';
     hostText.style.display = '';
     hostText.focus();
   });
 
-  // Sync port & auth when dropdown selection changes
   hostSelect.addEventListener('change', function () {
     autoSetPort(this.value);
     toggleAuthSectionBasedOnHost(this.value);
   });
 
-  // Sync port & auth when custom URL input changes
   hostText.addEventListener('input', function () {
     autoSetPort(this.value.trim());
     toggleAuthSectionBasedOnHost(this.value.trim());
   });
 
-  // ── Auth section visibility based on host ────────────────────
   function toggleAuthSectionBasedOnHost(host) {
     const authSection = document.getElementById('authSection');
     if (!authSection) return;
@@ -93,7 +100,6 @@ document.addEventListener('DOMContentLoaded', function () {
     authSection.style.display = isLocal ? 'none' : '';
   }
 
-  // ── Collapsible section toggle ────────────────────────────────
   [
     { toggle: 'authToggle',   body: 'authBody',   chevron: 'authChevron'   },
     { toggle: 'configToggle', body: 'configBody', chevron: 'configChevron' },
@@ -109,7 +115,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // ── Email form collapse/expand ────────────────────────────────
   if (emailLoginToggle && emailLoginContent) {
     emailLoginToggle.addEventListener('click', function () {
       emailLoginContent.classList.add('open');
@@ -117,7 +122,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // Close email form via the ✕ Close button inside the form
   const closeEmailFormBtn = document.getElementById('closeEmailForm');
   if (closeEmailFormBtn) {
     closeEmailFormBtn.addEventListener('click', function () {
@@ -127,7 +131,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // ── Get health / edition info from background ─────────────────
   chrome.runtime.sendMessage({ type: 'GET_HEALTH' }, (response) => {
     if (!response) return;
     if (response.edition) {
@@ -143,14 +146,12 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  // ── Retry proxy button ────────────────────────────────────────
   if (retryProxyBtn) {
     retryProxyBtn.addEventListener('click', () => {
       chrome.runtime.sendMessage({ type: 'RETRY_PROXY' }, () => window.close());
     });
   }
 
-  // ── Load saved config from storage ───────────────────────────
   chrome.storage.sync.get(['proxyHost', 'proxyPort', 'enforcementMode', 'proxyHostMode'], (result) => {
     const host        = result.proxyHost       || 'ai-proxy.zerotrusted.ai';
     const port        = result.proxyPort       || '443';
@@ -162,16 +163,13 @@ document.addEventListener('DOMContentLoaded', function () {
     currentConfigSpan.textContent = `${host}:${port} (${enforcement})`;
 
     if (hostMode === 'text') {
-      // Activate custom URL mode
       hostModeText.click();
       hostText.value = host;
     } else {
-      // Activate dropdown mode
       const option = hostSelect.querySelector(`option[value="${host}"]`);
       if (option) {
         hostSelect.value = host;
       } else {
-        // Host not in list — switch to custom URL mode automatically
         hostModeText.click();
         hostText.value = host;
       }
@@ -180,7 +178,6 @@ document.addEventListener('DOMContentLoaded', function () {
     toggleAuthSectionBasedOnHost(host);
   });
 
-  // ── Check current proxy status ────────────────────────────────
   chrome.proxy.settings.get({}, (config) => {
     if (config.value.mode === 'pac_script') {
       statusElement.textContent = 'Active — AI traffic is being routed through proxy';
@@ -193,14 +190,12 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  // ── Sanitize host: strip protocol & trailing slash ────────────
   function sanitizeHost(input) {
     return (input || '').trim()
       .replace(/^https?:\/\//, '')
       .replace(/\/$/, '') || 'localhost';
   }
 
-  // ── Save configuration ────────────────────────────────────────
   saveConfigBtn.addEventListener('click', () => {
     const host        = sanitizeHost(getHostValue());
     const port        = portInput.value.trim() || '443';
@@ -231,7 +226,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // ── Test connection ───────────────────────────────────────────
   testBtn.addEventListener('click', () => {
     const host     = sanitizeHost(getHostValue());
     const port     = portInput.value.trim() || '8081';
@@ -251,7 +245,6 @@ document.addEventListener('DOMContentLoaded', function () {
       });
   });
 
-  // ── Enable proxy ──────────────────────────────────────────────
   enableBtn.addEventListener('click', () => {
     chrome.runtime.sendMessage({ action: 'enableProxy' }, (resp) => {
       chrome.storage.sync.get(['proxyHost', 'proxyPort'], (result) => {
@@ -271,7 +264,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // ── Refresh routing domains ───────────────────────────────────
   refreshBtn.addEventListener('click', () => {
     chrome.runtime.sendMessage({ action: 'enableProxy' }, (resp) => {
       chrome.storage.sync.get(['proxyHost', 'proxyPort'], (result) => {
@@ -289,7 +281,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // ── Disable proxy ─────────────────────────────────────────────
   disableBtn.addEventListener('click', () => {
     chrome.proxy.settings.set({ value: { mode: 'direct' }, scope: 'regular' }, () => {
       statusElement.textContent = 'Inactive — Using direct connections';
@@ -298,7 +289,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // ── SSO / Microsoft login ─────────────────────────────────────
   if (connectBtn) {
     connectBtn.addEventListener('click', () => {
       authStatusSpan.innerHTML = '<span class="loader"></span>&nbsp;Connecting via Microsoft…';
@@ -312,7 +302,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // ── Disconnect ────────────────────────────────────────────────
   if (disconnectBtn) {
     disconnectBtn.addEventListener('click', () => {
       authStatusSpan.innerHTML = '<span class="loader"></span>&nbsp;Disconnecting…';
@@ -334,7 +323,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // ── Email / password login ────────────────────────────────────
   if (loginWithEmailBtn) {
     loginWithEmailBtn.addEventListener('click', () => {
       const email    = (loginEmailInput.value || '').trim();
@@ -363,7 +351,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // ── Refresh auth status ───────────────────────────────────────
   function refreshAuthStatus() {
     if (isStandaloneMode) {
       authStatusSpan.textContent = 'Standalone — no authentication required';
@@ -400,14 +387,12 @@ document.addEventListener('DOMContentLoaded', function () {
               setAuthenticatedUI(data.email);
             } else {
               setUnauthenticatedUI();
-              // Clear stale background auth
               chrome.runtime.sendMessage({ action: 'ztGetAuth' }, (resp) => {
                 if (resp && resp.auth) chrome.runtime.sendMessage({ action: 'ztClearAuth' });
               });
             }
           })
           .catch(() => {
-            // Proxy unreachable — fall back to background auth state
             chrome.runtime.sendMessage({ action: 'ztGetAuth' }, (resp) => {
               if (resp && resp.auth) {
                 const email = resp.auth.email || resp.auth.upn || resp.auth.user || 'Connected';
@@ -444,7 +429,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 
-// ── Blocklist / routing status ────────────────────────────────
 function updateBlocklistStatus() {
   const el = document.getElementById('blocklistStatus');
   if (!el) return;

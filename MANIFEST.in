@@ -1,0 +1,5 @@
+include README.md
+include LICENSE
+recursive-include interceptor *
+recursive-include standalone *
+exclude zt-proxy 1.py

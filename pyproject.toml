@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zt-ai-proxy-core"
+version = "0.1.0"
+description = "ZeroTrusted AI Proxy Core - MITM interception, PII detection, and enforcement logic (standalone edition)"
+authors = [
+    { name = "ZeroTrusted.ai", email = "opensource@zerotrusted.ai" }
+]
+license = { file = "LICENSE" }
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "mitmproxy>=9.0.0"
+]
+keywords = ["proxy", "mitmproxy", "pii", "llm", "security", "interception"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent"
+]

@@ -34,30 +34,9 @@
       --shadow:       0 1px 3px rgba(15,23,42,0.08), 0 1px 2px rgba(15,23,42,0.05);
       --shadow-md:    0 4px 12px rgba(15,23,42,0.1), 0 2px 4px rgba(15,23,42,0.06);
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      width: 360px;
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      font-size: 13px;
-      line-height: 1.5;
-          -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-
-
-    /* ── SLIM SCROLLBAR ── */
-    /* Firefox */
-    * {
-      scrollbar-width: thin;
-      scrollbar-color: rgba(0,0,0,0.35) transparent;
-    }
-    /* Chromium / WebKit */
-    *::-webkit-scrollbar {
-      width: 6px;
+    body { width: 360px; background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; font-size: 13px; line-height: 1.5; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+    /* ...rest of browser_extension_previous/popup.html content... */
       height: 6px;
     }
     *::-webkit-scrollbar-track {
@@ -407,6 +386,11 @@
 <body>
 
   <!-- ── HEADER ── -->
+  <!-- INSTALL WARNING BAR -->
+  <div id="installWarning" class="status-bar warning" style="display:none; justify-content:space-between; align-items:center; margin-bottom:7px;">
+    <span>Extension installed. You may need to restart your browser for full functionality.</span>
+    <button id="restartBrowserBtn" class="btn btn-ghost" style="width:auto;padding:3px 10px;font-size:11px;">Restart Browser</button>
+  </div>
   <div class="header">
     <div class="header-left">
       <img src="https://dev-identity.zerotrusted.ai/img/logo-with-tagline-white.png" alt="ZTProxy" class="logo">

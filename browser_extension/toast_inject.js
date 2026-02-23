@@ -221,12 +221,12 @@
     const isPIIBlock = reason && (reason.includes('pii') || reason.includes('PII') || reason.includes('sensitive'));
     
     if (isPIIBlock && !isAuth) {
-      // Show standalone-specific PII detection UI with enterprise upgrade
+      // Show enterprise signup block UI for PII/sensitive info
       card.innerHTML = `<div class="row"><img src="https://dev-identity.zerotrusted.ai/img/logo-with-tagline-white.png" alt="ZT" style="height:22px"> <b>🛡️ Sensitive Information Detected</b></div>
         <div style="margin-top:8px;line-height:1.5;opacity:.95">Your message was blocked because it contains potentially sensitive information such as names, email addresses, phone numbers, or financial data.</div>
         <div style="margin-top:10px;padding:10px;background:rgba(234,179,8,.15);border-left:3px solid #eab308;border-radius:4px;font-size:13px">
           <b style="color:#fbbf24">⚡ Upgrade to Enterprise</b>
-          <div style="margin-top:4px;opacity:.9">Get custom policies, audit logs, team management, and priority support.</div>
+          <div style="margin-top:4px;opacity:.9">Get custom policies, audit logs, team management, and priority support.<br>Sign up to unlock advanced features.</div>
         </div>
         <div class="zt-host" style="margin-top:8px;font-size:13.2px;opacity:.8">${host}</div>
         <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
