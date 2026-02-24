@@ -3,6 +3,16 @@ import json
 import os
 
 def handle_internal_request(flow, *, path, method, headers, cors_headers, get_config, metrics=None, **kwargs):
+    if path == '/zt-ui':
+        # Serve the standalone UI HTML
+        ui_path = os.path.join(os.path.dirname(__file__), 'ui', 'ui.html')
+        try:
+            with open(ui_path, 'r', encoding='utf-8') as f:
+                html = f.read()
+            flow.response = http.Response.make(200, html.encode('utf-8'), {"Content-Type": "text/html; charset=utf-8"})
+        except Exception as e:
+            flow.response = http.Response.make(500, f"Error loading UI: {e}".encode('utf-8'), {"Content-Type": "text/plain; charset=utf-8"})
+        return True
     # Minimal internal API endpoints for standalone
     if path == '/liveness':
         flow.response = http.Response.make(200, b'{"status": "ok"}', {"Content-Type": "application/json; charset=utf-8"})

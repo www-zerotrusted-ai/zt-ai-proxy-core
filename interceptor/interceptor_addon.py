@@ -213,7 +213,6 @@ class Interceptor:
                         return
                     else:
                         print("[ZT DEBUG] STANDALONE block page branch hit.")
-                    else:
                         # Standalone mode: generic block page
                         block_html = """
                         <html lang='en'>

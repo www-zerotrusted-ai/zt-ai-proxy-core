@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>ZTProxy Standalone Console</title>
+    
+  <style>
+    :root {
+      --zt-bg: #181c24;
+      --zt-surface: #23283a;
+      --zt-accent: #dc2626;
+      --zt-accent-hover: #b91c1c;
+      --zt-accent-light: #fff;
+      --zt-border: #2d2d2d;
+      --zt-text: #fff;
+      --zt-text2: #eab308;
+      --zt-radius: 12px;
+      --zt-shadow: 0 4px 24px #0008;
+    }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      margin: 0; padding: 0;
+      background: var(--zt-bg);
+      color: var(--zt-text);
+      display: flex; min-height: 100vh;
+      flex-direction: column;
+    }
+    .zt-header {
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+      padding: 18px 24px;
+      display: flex; align-items: center; gap: 16px;
+      border-bottom: 1px solid var(--zt-border);
+    }
+    .zt-logo {
+      height: 44px; width: auto;
+      filter: brightness(0.98);
+    }
+    .zt-title {
+      font-size: 18px; font-weight: 700; color: var(--zt-accent-light); letter-spacing: -0.2px;
+    }
+    main { flex: 1; padding: 24px 32px 48px; overflow-y: auto; }
+    section {
+      background: var(--zt-surface);
+      border: 1.5px solid var(--zt-border);
+      border-radius: var(--zt-radius);
+      box-shadow: var(--zt-shadow);
+      padding: 24px 22px;
+      margin-bottom: 32px;
+    }
+    h2 {
+      margin: 0 0 14px;
+      font-size: 17px;
+      color: var(--zt-accent);
+      font-weight: 700;
+    }
+    label {
+      display: block;
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--zt-accent);
+      font-weight: 600;
+    }
+    select, input[type=text] {
+      background: #1a1a1a;
+      color: var(--zt-text);
+      border: 1.5px solid var(--zt-border);
+      border-radius: 7px;
+      padding: 7px 10px;
+      font-size: 13px;
+      width: 240px;
+      margin-top: 4px;
+    }
+    button {
+      background: var(--zt-accent);
+      color: var(--zt-accent-light);
+      border: none;
+      border-radius: 7px;
+      padding: 9px 18px;
+      font-size: 14px;
+      font-weight: 700;
+      margin-top: 16px;
+      cursor: pointer;
+      transition: background 0.18s;
+      letter-spacing: .3px;
+    }
+    button:hover { background: var(--zt-accent-hover); }
+    .note {
+      font-size: 12px;
+      opacity: .78;
+      margin-top: 7px;
+      line-height: 1.4;
+      color: var(--zt-text2);
+    }
+    input[type=checkbox] {
+      transform: scale(1.08);
+      margin-right: 7px;
+    }
+    .zt-footer {
+      padding: 24px 0 60px;
+      font-size: 12px;
+      opacity: .55;
+      text-align: center;
+      color: var(--zt-accent-light);
+    }
+  </style>
+</head>
+<body>
+  <div class="zt-header">
+    <img src="https://dev-identity.zerotrusted.ai/img/logo-with-tagline-white.png" alt="ZeroTrusted AI" class="zt-logo">
+    <span class="zt-title">ZTProxy Standalone Console</span>
+  </div>
+  <main>
+    <section id="statusSection">
+      <h2>Runtime Status</h2>
+      <div class="note">Standalone mode. Minimal configuration for local proxy.</div>
+    </section>
+    <section id="configSection">
+      <h2>Configuration</h2>
+      <div class="row">
+        <div><label>Filter Mode<select id="filter_mode"><option value="all">All Requests</option><option value="post-only">POST Only</option><option value="post-chat">POST Chat Only</option><option value="post-chat-pii">POST Chat (PII threshold)</option></select></label></div>
+        <div><label>Enforcement Mode<select id="enforcement_mode"><option value="auto">Auto</option><option value="observe">Observe (log only)</option><option value="block">Block</option></select></label></div>
+      </div>
+      <div class="row">
+        <div><label><input type="checkbox" id="include_request_body"/>Include Request Body</label><div class="note">Disable for privacy; bodies not forwarded.</div></div>
+        <div><label><input type="checkbox" id="allow_proceed"/>Allow user to Proceed after PII block</label><div class="note">If enabled, users can proceed once per block decision.</div></div>
+      </div>
+      <button id="saveBtn">Save Configuration</button>
+      <div id="saveStatus" class="note"></div>
+    </section>
+    <div class="zt-footer">ZeroTrusted Proxy Standalone UI</div>
+  </main>
+</body>
+</html>
