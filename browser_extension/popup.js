@@ -46,6 +46,10 @@ document.addEventListener('DOMContentLoaded', function () {
   const emailLoginStatusEl = document.getElementById('emailLoginStatus');
   const hostModeDropdown   = document.getElementById('hostModeDropdown');
   const hostModeText       = document.getElementById('hostModeText');
+  const localProxyNotice   = document.getElementById('localProxyNotice');
+  const localProxyNoticeText = document.getElementById('localProxyNoticeText');
+  const remoteProxyNotice  = document.getElementById('remoteProxyNotice');
+  const remoteProxyNoticeText = document.getElementById('remoteProxyNoticeText');
 
   let isStandaloneMode = false;
 
@@ -56,6 +60,41 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     return hostSelect.value;
   }
+
+  // ── Show/hide localhost notice ───────────────────────────────
+  function updateProxyNotices() {
+    const host = getHostValue();
+    const isLocal = host === 'localhost' || host === '127.0.0.1' || host.startsWith('localhost:') || host.startsWith('127.0.0.1:');
+    const isRemote = host === 'ai-proxy.zerotrusted.ai' || host.startsWith('ai-proxy.zerotrusted.ai:');
+    if (hostText.style.display !== 'none') {
+      if (localProxyNoticeText) localProxyNoticeText.style.display = isLocal ? 'flex' : 'none';
+      if (remoteProxyNoticeText) remoteProxyNoticeText.style.display = isRemote ? 'flex' : 'none';
+      if (localProxyNotice) localProxyNotice.style.display = 'none';
+      if (remoteProxyNotice) remoteProxyNotice.style.display = 'none';
+    } else {
+      if (localProxyNotice) localProxyNotice.style.display = isLocal ? 'flex' : 'none';
+      if (remoteProxyNotice) remoteProxyNotice.style.display = isRemote ? 'flex' : 'none';
+      if (localProxyNoticeText) localProxyNoticeText.style.display = 'none';
+      if (remoteProxyNoticeText) remoteProxyNoticeText.style.display = 'none';
+    }
+  }
+
+  // Update notice on host selection/input
+  if (hostSelect) {
+    hostSelect.addEventListener('change', updateProxyNotices);
+  }
+  if (hostText) {
+    hostText.addEventListener('input', updateProxyNotices);
+  }
+  // Also update on mode toggle
+  if (hostModeDropdown) {
+    hostModeDropdown.addEventListener('click', updateProxyNotices);
+  }
+  if (hostModeText) {
+    hostModeText.addEventListener('click', updateProxyNotices);
+  }
+  // Initial call
+  updateProxyNotices();
 
   function autoSetPort(host) {
     if (host === 'ai-proxy.zerotrusted.ai') {

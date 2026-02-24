@@ -502,10 +502,42 @@
               <option value="ai-proxy.zerotrusted.ai">ai-proxy.zerotrusted.ai — Production</option>
               <option value="localhost">localhost — Local Development</option>
             </select>
+            <div id="localProxyNotice" class="status-bar warning" style="display:none;margin-top:10px;">
+              <span>
+                <b>Localhost selected:</b><br>
+                Standalone mode using open source:<br>
+                <a href="https://github.com/www-zerotrusted-ai/zt-ai-proxy-core" target="_blank" style="color:#2563eb;text-decoration:underline;">zt-ai-proxy-core on GitHub</a><br>
+                No subscription required.<br>
+                <span style="color:#475569;font-size:11px;">Remote/prod proxy requires a subscription.</span>
+              </span>
+            </div>
+            <div id="remoteProxyNotice" class="status-bar warning" style="display:none;margin-top:10px;">
+              <span>
+                <b>Remote proxy selected:</b><br>
+                <span style="color:#dc2626;font-weight:600;">Requires an active subscription.</span><br>
+                <span style="color:#475569;font-size:11px;">Localhost/standalone mode can be used freely with the open source proxy.</span>
+              </span>
+            </div>
           </div>
 
           <!-- Text mode (hidden by default) -->
           <input type="text" id="proxyHostText" placeholder="e.g. proxy.mycompany.com" style="display:none;">
+          <div id="localProxyNoticeText" class="status-bar warning" style="display:none;margin-top:10px;">
+            <span>
+              <b>Localhost selected:</b><br>
+              Standalone mode using open source:<br>
+              <a href="https://github.com/www-zerotrusted-ai/zt-ai-proxy-core" target="_blank" style="color:#2563eb;text-decoration:underline;">zt-ai-proxy-core on GitHub</a><br>
+              No subscription required.<br>
+              <span style="color:#475569;font-size:11px;">Remote/prod proxy requires a subscription.</span>
+            </span>
+          </div>
+          <div id="remoteProxyNoticeText" class="status-bar warning" style="display:none;margin-top:10px;">
+            <span>
+              <b>Remote proxy selected:</b><br>
+              <span style="color:#dc2626;font-weight:600;">Requires an active subscription.</span><br>
+              <span style="color:#475569;font-size:11px;">Localhost/standalone mode can be used freely with the open source proxy.</span>
+            </span>
+          </div>
 
           <!-- Port & Enforcement — 50% / 50% -->
           <div class="row-half">

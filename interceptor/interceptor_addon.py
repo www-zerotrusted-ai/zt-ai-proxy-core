@@ -150,61 +150,127 @@ class Interceptor:
                     data = {}
                 chat_text = extract_chat_text(data) if data else req.get_text()
                 if run_pii_gate(chat_text):
-                    block_html = """
-                    <html lang='en'>
-                    <head>
-                        <meta charset='UTF-8'>
-                        <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-                        <title>Sensitive Information Detected</title>
-                        <style>
-                            body { background: #181c24; color: #fff; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; display: flex; align-items: center; justify-content: center; height: 100vh; }
-                            .zt-block-container { background: #23283a; border-radius: 12px; box-shadow: 0 4px 24px #0008; padding: 36px 32px; max-width: 440px; text-align: center; }
-                            .zt-block-logo { width: 56px; height: 56px; margin-bottom: 18px; }
-                            .zt-block-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 10px; color: #eab308; }
-                            .zt-block-msg { font-size: 1.1rem; margin-bottom: 18px; color: #e0e0e0; }
-                            .zt-block-upgrade { margin-top: 10px; padding: 10px; background: rgba(234,179,8,.15); border-left: 3px solid #eab308; border-radius: 4px; font-size: 13px; }
-                            .zt-block-upgrade b { color: #fbbf24; }
-                            .zt-block-footer { font-size: 0.95rem; color: #aaa; margin-top: 18px; }
-                            .zt-block-btns { margin-top: 18px; display: flex; gap: 10px; justify-content: flex-end; }
-                            .zt-block-btn { background: #eab308; color: #000; font-weight: 600; border: none; border-radius: 4px; padding: 7px 16px; font-size: 14px; cursor: pointer; }
-                            .zt-block-btn:hover { background: #fbbf24; }
-                            .zt-block-btn-dismiss { background: #23283a; color: #fff; border: 1px solid #444; }
-                            .zt-block-btn-dismiss:hover { background: #444; }
-                            a { color: #7ecfff; text-decoration: none; }
-                            a:hover { text-decoration: underline; }
-                        </style>
-                    </head>
-                    <body>
-                        <div class='zt-block-container'>
-                            <img class='zt-block-logo' src='https://dev-identity.zerotrusted.ai/img/logo-with-tagline-white.png' alt='ZT'>
-                            <div class='zt-block-title'>🛡️ Sensitive Information Detected</div>
-                            <div class='zt-block-msg'>Your message was blocked because it contains potentially sensitive information such as names, email addresses, phone numbers, or financial data.</div>
-                            <div class='zt-block-upgrade'>
-                                <b>⚡ Upgrade to Enterprise</b>
-                                <div style='margin-top:4px;opacity:.9'>Get custom policies, audit logs, team management, and priority support.<br>Sign up to unlock advanced features.</div>
+                    print(f"[ZT DEBUG] Block triggered. IS_ENTERPRISE={IS_ENTERPRISE}, IS_STANDALONE={IS_STANDALONE}, EDITION={EDITION}")
+                    # Enterprise mode: show detailed popup with PII findings
+                    if IS_ENTERPRISE:
+                        print("[ZT DEBUG] ENTERPRISE block page branch hit.")
+                        from tools.request_filters import extract_pii_keywords
+                        pii_keywords = extract_pii_keywords(chat_text)
+                        print(f"[ZT DEBUG] PII keywords detected: {pii_keywords}")
+                        threshold = 3  # Example threshold, can be loaded from config
+                        block_html = f"""
+                        <html lang='en'>
+                        <head>
+                            <meta charset='UTF-8'>
+                            <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+                            <title>Request Blocked by ZeroTrusted.ai</title>
+                            <style>
+                                body {{ background: #181c24; color: #fff; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; display: flex; align-items: center; justify-content: center; height: 100vh; }}
+                                .zt-block-container {{ background: #23283a; border-radius: 12px; box-shadow: 0 4px 24px #0008; padding: 36px 32px; max-width: 440px; text-align: center; }}
+                                .zt-block-logo {{ width: 56px; height: 56px; margin-bottom: 18px; }}
+                                .zt-block-title {{ font-size: 1.5rem; font-weight: 600; margin-bottom: 10px; color: #eab308; }}
+                                .zt-block-msg {{ font-size: 1.1rem; margin-bottom: 18px; color: #e0e0e0; }}
+                                .zt-block-details {{ margin-bottom: 18px; color: #e0e0e0; font-size: 1rem; }}
+                                .zt-block-footer {{ font-size: 0.95rem; color: #aaa; margin-top: 18px; }}
+                                .zt-block-btns {{ margin-top: 18px; display: flex; gap: 10px; justify-content: flex-end; }}
+                                .zt-block-btn {{ background: #eab308; color: #000; font-weight: 600; border: none; border-radius: 4px; padding: 7px 16px; font-size: 14px; cursor: pointer; }}
+                                .zt-block-btn:hover {{ background: #fbbf24; }}
+                                .zt-block-btn-dismiss {{ background: #23283a; color: #fff; border: 1px solid #444; }}
+                                .zt-block-btn-dismiss:hover {{ background: #444; }}
+                                a {{ color: #7ecfff; text-decoration: none; }}
+                                a:hover {{ text-decoration: underline; }}
+                            </style>
+                        </head>
+                        <body>
+                            <div class='zt-block-container'>
+                                <img class='zt-block-logo' src='https://dev-identity.zerotrusted.ai/img/logo-with-tagline-white.png' alt='ZT'>
+                                <div class='zt-block-title'>Request Blocked by ZeroTrusted.ai: PII threshold met ({len(pii_keywords)} findings)</div>
+                                <div class='zt-block-details'>Sensitive Keywords Detected:<br>{'<br>'.join(['PII:' + k for k in pii_keywords])}</div>
+                                <div class='zt-block-msg'>Your message was blocked because it contains sensitive information. Please remove PII and try again.</div>
+                                <div class='zt-block-footer'>If you believe this is a mistake, contact your administrator or visit <a href='https://zerotrusted.ai' target='_blank'>zerotrusted.ai</a>.</div>
+                                <div class='zt-block-btns'>
+                                    <button onclick='window.close();' class='zt-block-btn zt-block-btn-dismiss'>Dismiss</button>
+                                </div>
                             </div>
-                            <div class='zt-block-footer'>If you believe this is a mistake, contact your administrator or visit <a href='https://zerotrusted.ai' target='_blank'>zerotrusted.ai</a>.</div>
-                            <div class='zt-block-btns'>
-                                <a href='https://zerotrusted.ai/enterprise' target='_blank' class='zt-block-btn'>Sign Up for Enterprise</a>
-                                <button onclick='window.close();' class='zt-block-btn zt-block-btn-dismiss'>Dismiss</button>
+                        </body>
+                        </html>
+                        """
+                        flow.response = http.Response.make(
+                            403,
+                            block_html.encode('utf-8'),
+                            {
+                                "Content-Type": "text/html; charset=utf-8",
+                                "X-ZT-Blocked": "1",
+                                "X-ZT-Mode": "post-chat",
+                                "X-ZT-Mode-Detail": "post-chat-pii",
+                                "X-ZT-PII": "1",
+                                "X-ZT-Toast": "1",
+                                "X-ZT-PII-Keywords": ','.join(pii_keywords),
+                                "X-ZT-PII-Threshold": str(threshold),
+                            }
+                        )
+                        print("[ZT DEBUG] ENTERPRISE block response sent.")
+                        return
+                    else:
+                        print("[ZT DEBUG] STANDALONE block page branch hit.")
+                    else:
+                        # Standalone mode: generic block page
+                        block_html = """
+                        <html lang='en'>
+                        <head>
+                            <meta charset='UTF-8'>
+                            <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+                            <title>Sensitive Information Detected</title>
+                            <style>
+                                body { background: #181c24; color: #fff; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; display: flex; align-items: center; justify-content: center; height: 100vh; }
+                                .zt-block-container { background: #23283a; border-radius: 12px; box-shadow: 0 4px 24px #0008; padding: 36px 32px; max-width: 440px; text-align: center; }
+                                .zt-block-logo { width: 56px; height: 56px; margin-bottom: 18px; }
+                                .zt-block-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 10px; color: #eab308; }
+                                .zt-block-msg { font-size: 1.1rem; margin-bottom: 18px; color: #e0e0e0; }
+                                .zt-block-upgrade { margin-top: 10px; padding: 10px; background: rgba(234,179,8,.15); border-left: 3px solid #eab308; border-radius: 4px; font-size: 13px; }
+                                .zt-block-upgrade b { color: #fbbf24; }
+                                .zt-block-footer { font-size: 0.95rem; color: #aaa; margin-top: 18px; }
+                                .zt-block-btns { margin-top: 18px; display: flex; gap: 10px; justify-content: flex-end; }
+                                .zt-block-btn { background: #eab308; color: #000; font-weight: 600; border: none; border-radius: 4px; padding: 7px 16px; font-size: 14px; cursor: pointer; }
+                                .zt-block-btn:hover { background: #fbbf24; }
+                                .zt-block-btn-dismiss { background: #23283a; color: #fff; border: 1px solid #444; }
+                                .zt-block-btn-dismiss:hover { background: #444; }
+                                a { color: #7ecfff; text-decoration: none; }
+                                a:hover { text-decoration: underline; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class='zt-block-container'>
+                                <img class='zt-block-logo' src='https://dev-identity.zerotrusted.ai/img/logo-with-tagline-white.png' alt='ZT'>
+                                <div class='zt-block-title'>🛡️ Sensitive Information Detected</div>
+                                <div class='zt-block-msg'>Your message was blocked because it contains potentially sensitive information such as names, email addresses, phone numbers, or financial data.</div>
+                                <div class='zt-block-upgrade'>
+                                    <b>⚡ Upgrade to Enterprise</b>
+                                    <div style='margin-top:4px;opacity:.9'>Get custom policies, audit logs, team management, and priority support.<br>Sign up to unlock advanced features.</div>
+                                </div>
+                                <div class='zt-block-footer'>If you believe this is a mistake, contact your administrator or visit <a href='https://zerotrusted.ai' target='_blank'>zerotrusted.ai</a>.</div>
+                                <div class='zt-block-btns'>
+                                    <a href='https://zerotrusted.ai/enterprise' target='_blank' class='zt-block-btn'>Sign Up for Enterprise</a>
+                                    <button onclick='window.close();' class='zt-block-btn zt-block-btn-dismiss'>Dismiss</button>
+                                </div>
                             </div>
-                        </div>
-                    </body>
-                    </html>
-                    """
-                    flow.response = http.Response.make(
-                        403,
-                        block_html.encode('utf-8'),
-                        {
-                            "Content-Type": "text/html; charset=utf-8",
-                            "X-ZT-Blocked": "1",
-                            "X-ZT-Mode": "post-chat",
-                            "X-ZT-Mode-Detail": "post-chat-pii",
-                            "X-ZT-PII": "1",
-                            "X-ZT-Toast": "1",
-                        }
-                    )
-                    return
+                        </body>
+                        </html>
+                        """
+                        flow.response = http.Response.make(
+                            403,
+                            block_html.encode('utf-8'),
+                            {
+                                "Content-Type": "text/html; charset=utf-8",
+                                "X-ZT-Blocked": "1",
+                                "X-ZT-Mode": "post-chat",
+                                "X-ZT-Mode-Detail": "post-chat-pii",
+                                "X-ZT-PII": "1",
+                                "X-ZT-Toast": "1",
+                            }
+                        )
+                        print("[ZT DEBUG] STANDALONE block response sent.")
+                        return
         # --- End of PII detection for chat POSTs ---
 
 # Ensure mitmproxy loads the Interceptor addon
