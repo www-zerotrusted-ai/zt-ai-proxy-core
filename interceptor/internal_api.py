@@ -55,7 +55,7 @@ def handle_internal_request(flow, *, path, method, headers, cors_headers, get_co
             {"Content-Type": "application/json"}
         )
         return True
-    if path == '/pac':
+    if path.startswith('/pac'):
         # Dynamic PAC endpoint consistent with enterprise logic
         cors_headers = cors_headers or {"Content-Type": "application/x-ns-proxy-autoconfig"}
         method = method.upper()

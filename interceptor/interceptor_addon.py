@@ -82,6 +82,21 @@ class Interceptor:
         headers = dict(req.headers) if req.headers else {}
         host_lower = host.lower()
         is_internal_host = host_lower in {'localhost', '127.0.0.1', '0.0.0.0'}
+
+        # --- DEBUG: Always log POST and is_chat_path at the very top ---
+        if method == 'POST':
+            print(f"[ZT-DEBUG] POST received: host={host}, path={path}")
+            # Use the same logic as below for is_chat_path
+            from tools.request_filters import is_chat_path
+            chat_path_result_dbg = False
+            if 'openai' in host_lower or 'chatgpt' in host_lower or 'claude' in host_lower or 'bard' in host_lower or 'gemini' in host_lower:
+                chat_path_result_dbg = is_chat_path(path)
+            print(f"[ZT-DEBUG] is_chat_path({path}) result: {chat_path_result_dbg}")
+
+        # BYPASS: Google conversion/analytics APIs should not be blocked or inspected
+        from tools.request_filters import is_conversion_api
+        if is_conversion_api(host, path):
+            return  # Allow these requests to pass through uninspected
         if is_internal_host:
             origin_hdr = headers.get('Origin') or headers.get('origin')
             cors_headers = {
@@ -140,16 +155,50 @@ class Interceptor:
             if chat_path_match:
                 try:
                     content_type = headers.get('Content-Type', '')
+                    body = req.get_text()
+                    data = {}
+                    chat_text = ''
                     if 'application/json' in content_type:
                         import json
-                        body = req.get_text()
                         data = json.loads(body) if body else {}
+                        chat_text = extract_chat_text(data) if data else body
+                    elif 'application/x-www-form-urlencoded' in content_type:
+                        from urllib.parse import parse_qs, unquote
+                        form = parse_qs(body)
+                        f_req = form.get('f.req')
+                        if f_req:
+                            try:
+                                import json
+                                f_req_val = f_req[0]
+                                if '%' in f_req_val:
+                                    f_req_val = unquote(f_req_val)
+                                parsed = json.loads(f_req_val)
+                                if isinstance(parsed, list) and len(parsed) > 1:
+                                    inner = parsed[1]
+                                    if isinstance(inner, list) and len(inner) > 0 and isinstance(inner[0], str):
+                                        chat_text = inner[0]
+                                    else:
+                                        chat_text = str(parsed)
+                                else:
+                                    chat_text = str(parsed)
+                            except Exception as e:
+                                print(f"[ZT DEBUG] Gemini f.req parse error: {e}")
+                                chat_text = body
+                        else:
+                            chat_text = body
                     else:
-                        data = {}
-                except Exception:
-                    data = {}
-                chat_text = extract_chat_text(data) if data else req.get_text()
-                if run_pii_gate(chat_text):
+                        chat_text = body
+                    print(f"[ZT DEBUG] Extracted chat_text for PII: {chat_text[:200]}")
+                except Exception as e:
+                    print(f"[ZT DEBUG] Error extracting chat text: {e}")
+                    chat_text = req.get_text()
+
+                # Log Gemini chat POST details to console for debugging
+                print(f"[ZT GEMINI] Host: {host} Path: {path}")
+                print(f"[ZT GEMINI] Chat Text: {chat_text}")
+                pii_found = run_pii_gate(chat_text)
+                print(f"[ZT GEMINI] PII Detected: {pii_found}")
+                if pii_found:
                     print(f"[ZT DEBUG] Block triggered. IS_ENTERPRISE={IS_ENTERPRISE}, IS_STANDALONE={IS_STANDALONE}, EDITION={EDITION}")
                     # Enterprise mode: show detailed popup with PII findings
                     if IS_ENTERPRISE:
@@ -231,6 +280,9 @@ class Interceptor:
                                 .zt-block-footer { font-size: 0.95rem; color: #aaa; margin-top: 18px; }
                                 .zt-block-btns { margin-top: 18px; display: flex; gap: 10px; justify-content: flex-end; }
                                 .zt-block-btn { background: #eab308; color: #000; font-weight: 600; border: none; border-radius: 4px; padding: 7px 16px; font-size: 14px; cursor: pointer; }
+                                # DEBUG: Log every POST request's host and path at the very start
+                                if method == 'POST':
+                                    print(f"[ZT-DEBUG] POST received: host={flow.request.host}, path={flow.request.path}")
                                 .zt-block-btn:hover { background: #fbbf24; }
                                 .zt-block-btn-dismiss { background: #23283a; color: #fff; border: 1px solid #444; }
                                 .zt-block-btn-dismiss:hover { background: #444; }
